@@ -15,7 +15,7 @@ type Posts []Post
 
 // User model
 type User struct {
-	ID       string `json:"id"`
+	ID       int64  `json:"id"`
 	Username string `json:"username"`
 	Password string
 	Email    string `json:"email"`

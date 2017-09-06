@@ -1,11 +1,12 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
-	"github.com/joho/godotenv"
-	"database/sql"
+
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 )
 
 type Database struct {
@@ -22,7 +23,7 @@ func Connect() *Database {
 	dbUsername := os.Getenv("DATABASE_USERNAME")
 	dbPassword := os.Getenv("DATABASE_PASSWORD")
 
-	db, err := sql.Open("mysql", dbUsername + ":" + dbPassword + "@/" + dbName)
+	db, err := sql.Open("mysql", dbUsername+":"+dbPassword+"@/"+dbName)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -30,7 +31,7 @@ func Connect() *Database {
 	fmt.Println("Connected to database.")
 
 	return &Database{
-		db
+		db,
 	}
 }
 
@@ -39,6 +40,23 @@ func (dbfactory Database) Close() {
 	dbfactory.db.Close()
 }
 
-func (dbfactory Database) CreateTable(table, query string) error {
-	
+// CreateTable - create new table
+func (dbfactory Database) CreateTable(table, query string) {
+	_, err := dbfactory.db.Exec("SET foreign_key_checks = 0")
+	checkError(err)
+
+	_, err = dbfactory.db.Exec("DROP TABLE IF EXISTS `" + table + "`")
+	checkError(err)
+
+	_, err = dbfactory.db.Exec(query)
+	checkError(err)
+
+	fmt.Println("Created table:", table)
+}
+
+// Check error
+func checkError(err error) {
+	if err != nil {
+		panic(err.Error())
+	}
 }
