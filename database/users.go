@@ -11,6 +11,12 @@ func (dbfactory Database) InsertUser(user model.User) (model.User, error) {
 		return model.User{}, err
 	}
 
+	// Check if email already existed
+	exist, err = dbfactory.CheckEmailExists(user.Email)
+	if exist == true {
+		return model.User{}, err
+	}
+
 	stmt, err := dbfactory.db.Prepare("INSERT INTO `users` (username, password, email) VALUES(?, ?, ?)")
 	if err != nil {
 		return model.User{}, err
@@ -57,6 +63,26 @@ func (dbfactory Database) CheckUsernameExists(username string) (bool, error) {
 
 	if exist == true {
 		return true, errors.New("this username already exists")
+	}
+
+	return false, nil
+}
+
+// CheckEmailExists check if the given email already existed
+func (dbfactory Database) CheckEmailExists(email string) (bool, error) {
+	stmt, err := dbfactory.db.Prepare("SELECT EXISTS(SELECT 1 FROM `users` WHERE email = ?)")
+	if err != nil {
+		return true, errors.New("an error while checking the email")
+	}
+
+	var exist bool
+	rows := stmt.QueryRow(email)
+	if err := rows.Scan(&exist); err != nil {
+		return true, errors.New("an error while checking the email")
+	}
+
+	if exist == true {
+		return true, errors.New("this email already exists")
 	}
 
 	return false, nil
