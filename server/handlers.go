@@ -3,9 +3,42 @@ package server
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
+	"golang.org/x/crypto/bcrypt"
+
+	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/dgrijalva/jwt-go/request"
 	"github.com/gorilla/mux"
+	"github.com/tatthien/go-cms-api/model"
 )
+
+func sendJSON(w http.ResponseWriter, status int, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Cache-Control", "private; max-age=86400")
+	w.WriteHeader(status)
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		panic(err.Error())
+	}
+}
+
+// ValidateTokenMiddleware validate token middleware
+func (s *Server) ValidateTokenMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	token, err := request.ParseFromRequest(r, request.AuthorizationHeaderExtractor, func(token *jwt.Token) (interface{}, error) {
+		return s.verifyKey, nil
+	})
+
+	if err == nil {
+		if token.Valid {
+			next(w, r)
+		} else {
+			sendJSON(w, http.StatusUnauthorized, "Token is not valid")
+		}
+	} else {
+		sendJSON(w, http.StatusUnauthorized, "Unauthorized access to this resource")
+	}
+}
 
 // IndexHandler handler function for `/api/v1` endpoint
 func (s *Server) IndexHandler(w http.ResponseWriter, r *http.Request) {
@@ -14,6 +47,61 @@ func (s *Server) IndexHandler(w http.ResponseWriter, r *http.Request) {
 		"Hello",
 		nil,
 	}
+	sendJSON(w, http.StatusOK, resp)
+}
+
+// LoginHandler handler function for `/api/v1/login` endpoint
+func (s *Server) LoginHandler(w http.ResponseWriter, r *http.Request) {
+	var loginUser model.UserCredentials
+	var resp Response
+	err := json.NewDecoder(r.Body).Decode(&loginUser)
+	if err != nil {
+		resp.Message = "Error in request"
+		sendJSON(w, http.StatusOK, resp)
+		return
+	}
+
+	if loginUser.Email == "" {
+		resp.Message = "Email is missing"
+		sendJSON(w, http.StatusOK, resp)
+		return
+	}
+
+	if loginUser.Password == "" {
+		resp.Message = "Password is missing"
+		sendJSON(w, http.StatusOK, resp)
+		return
+	}
+
+	storedUser, err := s.db.GetUserByEmail(loginUser.Email)
+	if err != nil {
+		resp.Message = "Email does not match"
+		sendJSON(w, http.StatusOK, resp)
+		return
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(storedUser.Password), []byte(loginUser.Password)); err != nil {
+		resp.Message = "Password does not match"
+		sendJSON(w, http.StatusOK, resp)
+		return
+	}
+
+	// Create token & send to user
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"exp": time.Now().Add(time.Hour * time.Duration(1)).Unix(),
+		"iat": time.Now().Unix(),
+	})
+
+	tokenString, err := token.SignedString(s.signKey)
+	if err != nil {
+		resp.Message = err.Error()
+		sendJSON(w, http.StatusOK, resp)
+		return
+	}
+
+	resp.Success = true
+	resp.Data = tokenString
+
 	sendJSON(w, http.StatusOK, resp)
 }
 
@@ -43,11 +131,7 @@ func (s *Server) GetPostsHandler(w http.ResponseWriter, r *http.Request) {
 
 	posts, err := s.db.GetPosts(args)
 
-	resp := Response{
-		false,
-		"",
-		nil,
-	}
+	resp := Response{false, "", nil}
 	if err != nil {
 		resp.Message = err.Error()
 	} else {
@@ -63,11 +147,7 @@ func (s *Server) GetPostsHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) GetPostHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	slug := vars["slug"]
-	resp := Response{
-		false,
-		"",
-		nil,
-	}
+	resp := Response{false, "", nil}
 
 	post, err := s.db.GetPostBySlug(slug)
 	if err != nil {
@@ -80,12 +160,8 @@ func (s *Server) GetPostHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func sendJSON(w http.ResponseWriter, status int, data interface{}) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Cache-Control", "private; max-age=86400")
-	w.WriteHeader(status)
-	if err := json.NewEncoder(w).Encode(data); err != nil {
-		panic(err.Error())
-	}
+// StorePostHandler handler function for `/api/v1/posts/` endpoint
+// store post data into database
+func (s *Server) StorePostHandler(w http.ResponseWriter, r *http.Request) {
+	sendJSON(w, http.StatusOK, "hello")
 }

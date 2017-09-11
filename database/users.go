@@ -29,12 +29,12 @@ func (dbfactory Database) InsertUser(user model.User) (model.User, error) {
 
 	id, _ := res.LastInsertId()
 
-	lastInsertUser, err := dbfactory.GetUser(id)
+	lastInsertUser, err := dbfactory.GetUserByID(id)
 	return lastInsertUser, err
 }
 
-// GetUser - get user from database by user id
-func (dbfactory Database) GetUser(id int64) (model.User, error) {
+// GetUserByID - get user from database by user id
+func (dbfactory Database) GetUserByID(id int64) (model.User, error) {
 	stmt, err := dbfactory.db.Prepare("SELECT id, username, email FROM `users` WHERE id = ?")
 	if err != nil {
 		return model.User{}, err
@@ -43,6 +43,21 @@ func (dbfactory Database) GetUser(id int64) (model.User, error) {
 	var user model.User
 	rows := stmt.QueryRow(id)
 	if err := rows.Scan(&user.ID, &user.Username, &user.Email); err != nil {
+		return model.User{}, err
+	}
+	return user, nil
+}
+
+// GetUserByEmail - get user from database by user email
+func (dbfactory Database) GetUserByEmail(email string) (model.User, error) {
+	stmt, err := dbfactory.db.Prepare("SELECT id, username, email, password FROM `users` WHERE email = ?")
+	if err != nil {
+		return model.User{}, err
+	}
+
+	var user model.User
+	rows := stmt.QueryRow(email)
+	if err := rows.Scan(&user.ID, &user.Username, &user.Email, &user.Password); err != nil {
 		return model.User{}, err
 	}
 	return user, nil
@@ -72,17 +87,17 @@ func (dbfactory Database) CheckUsernameExists(username string) (bool, error) {
 func (dbfactory Database) CheckEmailExists(email string) (bool, error) {
 	stmt, err := dbfactory.db.Prepare("SELECT EXISTS(SELECT 1 FROM `users` WHERE email = ?)")
 	if err != nil {
-		return true, errors.New("an error while checking the email")
+		return true, errors.New("An error while checking the email")
 	}
 
 	var exist bool
 	rows := stmt.QueryRow(email)
 	if err := rows.Scan(&exist); err != nil {
-		return true, errors.New("an error while checking the email")
+		return true, errors.New("An error while checking the email")
 	}
 
 	if exist == true {
-		return true, errors.New("this email already exists")
+		return true, errors.New("This email already exists")
 	}
 
 	return false, nil

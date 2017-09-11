@@ -19,9 +19,15 @@ type Posts []Post
 type User struct {
 	ID       int64  `json:"id"`
 	Username string `json:"username"`
-	Password string
+	Password string `json:"-"`
 	Email    string `json:"email"`
 }
 
 // Users model
 type Users []User
+
+// UserCredentials model
+type UserCredentials struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
