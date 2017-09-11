@@ -47,7 +47,7 @@ func (s *Server) Run() {
 	routes := Routes{
 		Route{"/api/v1", "GET", s.IndexHandler},
 		Route{"/api/v1/posts", "GET", s.GetPostsHandler},
-		Route{"/api/v1/posts/{id}", "GET", s.GetPostHandler},
+		Route{"/api/v1/posts/{slug}", "GET", s.GetPostHandler},
 	}
 	for _, route := range routes {
 		r.HandleFunc(route.Path, route.Handler).Methods(route.Method)

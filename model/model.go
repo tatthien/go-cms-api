@@ -2,12 +2,14 @@ package model
 
 // Post model
 type Post struct {
-	ID      int64  `json:"id"`
-	Title   string `json:"title"`
-	Content string `json:"content"`
-	Author  int64  `json:"author"`
-	Created string `json:"created_at"`
-	Updated string `json:"updated_at"`
+	ID       int64  `json:"id"`
+	Title    string `json:"title"`
+	Content  string `json:"content"`
+	PostType string `json:"post_type"`
+	Slug     string `json:"slug"`
+	Author   int64  `json:"author"`
+	Created  string `json:"created_at"`
+	Updated  string `json:"updated_at"`
 }
 
 // Posts model

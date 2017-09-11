@@ -1,13 +1,16 @@
 package database
 
 import (
+	"strconv"
+
+	"github.com/Machiel/slugify"
 	"github.com/tatthien/go-cms-api/model"
 	"github.com/tatthien/go-cms-api/ultil"
 )
 
 // InsertPost insert new post into database
 func (dbfactory *Database) InsertPost(post model.Post) (model.Post, error) {
-	stmt, err := dbfactory.db.Prepare("INSERT INTO `posts` (title, content, author_id, created_at, updated_at) VALUES(?, ?, ?, ?, ?)")
+	stmt, err := dbfactory.db.Prepare("INSERT INTO `posts` (title, content, post_type, slug, author_id, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return model.Post{}, err
 	}
@@ -20,7 +23,16 @@ func (dbfactory *Database) InsertPost(post model.Post) (model.Post, error) {
 		post.Updated = ultil.GetCurrentMySQLDate()
 	}
 
-	res, err := stmt.Exec(post.Title, post.Content, post.Author, post.Created, post.Updated)
+	// Default post type is `post`
+	if post.PostType == "" {
+		post.PostType = "post"
+	}
+
+	// Sanitize slug
+	post.Slug = slugify.Slugify(post.Title)
+	post.Slug = dbfactory.GetUniquePostSlug(post.Slug)
+
+	res, err := stmt.Exec(post.Title, post.Content, post.PostType, post.Slug, post.Author, post.Created, post.Updated)
 	if err != nil {
 		return model.Post{}, err
 	}
@@ -30,12 +42,12 @@ func (dbfactory *Database) InsertPost(post model.Post) (model.Post, error) {
 		return model.Post{}, err
 	}
 
-	lastInsertPost, err := dbfactory.GetPost(id)
+	lastInsertPost, err := dbfactory.GetPostByID(id)
 	return lastInsertPost, err
 }
 
-// GetPost get post data by id
-func (dbfactory *Database) GetPost(id int64) (model.Post, error) {
+// GetPostByID get post data by id
+func (dbfactory *Database) GetPostByID(id int64) (model.Post, error) {
 	stmt, err := dbfactory.db.Prepare("SELECT * FROM `posts` WHERE id = ?")
 	if err != nil {
 		return model.Post{}, err
@@ -43,7 +55,23 @@ func (dbfactory *Database) GetPost(id int64) (model.Post, error) {
 
 	var post model.Post
 	rows := stmt.QueryRow(id)
-	if err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.Author, &post.Created, &post.Updated); err != nil {
+	if err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.PostType, &post.Slug, &post.Author, &post.Created, &post.Updated); err != nil {
+		return model.Post{}, err
+	}
+
+	return post, nil
+}
+
+// GetPostBySlug get post data by slug
+func (dbfactory *Database) GetPostBySlug(slug string) (model.Post, error) {
+	stmt, err := dbfactory.db.Prepare("SELECT * FROM `posts` WHERE slug = ?")
+	if err != nil {
+		return model.Post{}, err
+	}
+
+	var post model.Post
+	rows := stmt.QueryRow(slug)
+	if err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.PostType, &post.Slug, &post.Author, &post.Created, &post.Updated); err != nil {
 		return model.Post{}, err
 	}
 
@@ -51,13 +79,37 @@ func (dbfactory *Database) GetPost(id int64) (model.Post, error) {
 }
 
 // GetPosts get list of post
-func (dbfactory *Database) GetPosts(offset, limit int) (model.Posts, error) {
-	stmt, err := dbfactory.db.Prepare("SELECT * FROM `posts` LIMIT ?, ?")
+func (dbfactory *Database) GetPosts(args map[string]string) (model.Posts, error) {
+	defaultArgs := map[string]string{
+		"page":      "1",
+		"limit":     "10",
+		"post_type": "post",
+	}
+
+	for k, v := range defaultArgs {
+		if _, ok := args[k]; !ok {
+			args[k] = v
+		}
+	}
+
+	postType := args["post_type"]
+	page, err := strconv.Atoi(args["page"])
+	if err != nil {
+		return model.Posts{}, err
+	}
+	limit, err := strconv.Atoi(args["limit"])
 	if err != nil {
 		return model.Posts{}, err
 	}
 
-	rows, err := stmt.Query(offset, limit)
+	offset := (page - 1) * limit
+
+	stmt, err := dbfactory.db.Prepare("SELECT * FROM `posts` WHERE `post_type` = ? LIMIT ?, ?")
+	if err != nil {
+		return model.Posts{}, err
+	}
+
+	rows, err := stmt.Query(postType, offset, limit)
 	if err != nil {
 		return model.Posts{}, err
 	}
@@ -65,10 +117,28 @@ func (dbfactory *Database) GetPosts(offset, limit int) (model.Posts, error) {
 	var posts model.Posts
 	for rows.Next() {
 		var post model.Post
-		if err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.Author, &post.Created, &post.Updated); err != nil {
+		if err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.PostType, &post.Slug, &post.Author, &post.Created, &post.Updated); err != nil {
 			continue
 		}
 		posts = append(posts, post)
 	}
 	return posts, nil
+}
+
+// GetUniquePostSlug get the unique slug
+func (dbfactory *Database) GetUniquePostSlug(slug string) string {
+	post, _ := dbfactory.GetPostBySlug(slug)
+	if post.ID == 0 {
+		return slug
+	}
+
+	var newSlug string
+	for i := 1; i < 10; i++ {
+		newSlug = slug + "-" + strconv.Itoa(i)
+		post, _ := dbfactory.GetPostBySlug(newSlug)
+		if post.ID == 0 {
+			break
+		}
+	}
+	return newSlug
 }

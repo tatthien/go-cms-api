@@ -23,6 +23,8 @@ func main() {
 		"`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT," +
 		"`title` TEXT," +
 		"`content` TEXT," +
+		"`post_type` VARCHAR(20)," +
+		"`slug` VARCHAR(255)," +
 		"`author_id` INT (11) UNSIGNED NOT NULL," +
 		"`created_at` DATETIME," +
 		"`updated_at` DATETIME," +
