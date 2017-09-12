@@ -1,6 +1,10 @@
 # go-cms-api
 
-## Get the project
+This is a small api service provides getting, creating posts via REST. It also includes the JWT authentication to prevent anonymous put the data into database.
+
+## How to use
+
+### Get the project 
 
 Assume that you've already configured your GOPATH.
 
@@ -8,22 +12,21 @@ Assume that you've already configured your GOPATH.
 go get github.com/tatthien/go-cms-api
 ```
 
-## Configuration
 
-### 1. Configure database
+### Configure app information
 Copy or rename the file `.env.example` to `.env`. Then enter your own server ip, application port, database information.
 
 ```
-APP_IP = your server ip
-APP_PORT = your application port
-DATABASE_NAME = your database name
-DATABASE_USERNAME = your datatase username
-DATABASE_PASSWORD = your database password
+APP_IP=your_server_ip
+APP_PORT=your_application_port
+DATABASE_NAME=your_database_name
+DATABASE_USERNAME=your_datatase_username
+DATABASE_PASSWORD=your_database_password
 ```
 
 If you folk this project, make sure you do not push this `.env` file to Github. I think you know why ;)
 
-### 2. Configure token
+### Configure token
 
 This project is using `jwt-golang` package to generate and validate the token.
 
