@@ -2,6 +2,27 @@
 
 This is a small api service provides getting, creating posts via REST. It also includes the JWT authentication to prevent anonymous put the data into database.
 
+## Endpoints
+
+### Authentication
+
+Endpoint: `POST /api/v1/login`
+
+Request data:
+
+- `email`: Admin email
+- `password`: Admin password
+
+### Get list of posts
+
+Endpoint: `GET /api/v1/posts`
+
+Request data:
+
+- `page`: default is `1`. Current page.
+- `limit`: default is `10`. Litmit the posts from response.
+- `post_type`: (`post`|`til`) default is `post`. Get the specific post type.
+
 ## How to use
 
 ### Get the project 
