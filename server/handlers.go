@@ -29,14 +29,18 @@ func (s *Server) ValidateTokenMiddleware(w http.ResponseWriter, r *http.Request,
 		return s.verifyKey, nil
 	})
 
+	var resp Response
+
 	if err == nil {
 		if token.Valid {
 			next(w, r)
 		} else {
-			sendJSON(w, http.StatusUnauthorized, "Token is not valid")
+			resp.Message = "Token is not valid"
+			sendJSON(w, http.StatusUnauthorized, resp)
 		}
 	} else {
-		sendJSON(w, http.StatusUnauthorized, "Unauthorized access to this resource")
+		resp.Message = "Unauthorized access to this resource"
+		sendJSON(w, http.StatusUnauthorized, resp)
 	}
 }
 
@@ -100,7 +104,10 @@ func (s *Server) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp.Success = true
-	resp.Data = tokenString
+	resp.Data = map[string]interface{}{
+		"token": tokenString,
+		"user":  storedUser,
+	}
 
 	sendJSON(w, http.StatusOK, resp)
 }
@@ -163,5 +170,22 @@ func (s *Server) GetPostHandler(w http.ResponseWriter, r *http.Request) {
 // StorePostHandler handler function for `/api/v1/posts/` endpoint
 // store post data into database
 func (s *Server) StorePostHandler(w http.ResponseWriter, r *http.Request) {
-	sendJSON(w, http.StatusOK, "hello")
+	var post model.Post
+	var resp Response
+	if err := json.NewDecoder(r.Body).Decode(&post); err != nil {
+		resp.Message = "Error in request"
+		sendJSON(w, http.StatusOK, resp)
+		return
+	}
+
+	post, err := s.db.InsertPost(post)
+	if err != nil {
+		resp.Message = err.Error()
+		sendJSON(w, http.StatusOK, resp)
+		return
+	}
+
+	resp.Success = true
+	resp.Data = post
+	sendJSON(w, http.StatusOK, resp)
 }
