@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -187,5 +188,30 @@ func (s *Server) StorePostHandler(w http.ResponseWriter, r *http.Request) {
 
 	resp.Success = true
 	resp.Data = post
+	sendJSON(w, http.StatusOK, resp)
+}
+
+// UpdatePostHandler handler function for update post endpoint
+func (s *Server) UpdatePostHandler(w http.ResponseWriter, r *http.Request) {
+	var resp Response
+	vars := mux.Vars(r)
+	id, err := strconv.ParseInt(vars["id"], 10, 64)
+	if err != nil {
+		resp.Message = "Post ID is not valid"
+		sendJSON(w, http.StatusOK, resp)
+		return
+	}
+
+	var post model.Post
+	if err := json.NewDecoder(r.Body).Decode(&post); err != nil {
+		resp.Message = "Error in request"
+		sendJSON(w, http.StatusOK, resp)
+		return
+	}
+
+	post, err = s.db.UpdatePost(id, post)
+	resp.Success = true
+	resp.Data = post
+
 	sendJSON(w, http.StatusOK, resp)
 }

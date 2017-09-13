@@ -42,8 +42,26 @@ func (dbfactory *Database) InsertPost(post model.Post) (model.Post, error) {
 		return model.Post{}, err
 	}
 
-	lastInsertPost, err := dbfactory.GetPostByID(id)
-	return lastInsertPost, err
+	post, err = dbfactory.GetPostByID(id)
+	return post, err
+}
+
+// UpdatePost update post
+func (dbfactory *Database) UpdatePost(id int64, post model.Post) (model.Post, error) {
+	stmt, err := dbfactory.db.Prepare("UPDATE `posts` SET title=?, content=?, updated_at=? WHERE id = ?")
+	if err != nil {
+		return model.Post{}, err
+	}
+
+	post.Updated = ultil.GetCurrentMySQLDate()
+
+	_, err = stmt.Exec(post.Title, post.Content, post.Updated, id)
+	if err != nil {
+		return model.Post{}, err
+	}
+
+	post, err = dbfactory.GetPostByID(id)
+	return post, err
 }
 
 // GetPostByID get post data by id
