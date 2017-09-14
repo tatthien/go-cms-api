@@ -33,11 +33,21 @@ This project is using `jwt-golang` package to generate and validate the token.
 ### Install database
 
 ```
-go run install.go
+go run install/install.go
 ```
 
-### Start server
+### Run in local
 
 ```
-go run main.go
+go run go-cms-api.go
 ```
+
+### Run in server with custom domain
+
+```
+go build go-cms-api.go
+nohup ./go-cms-api & // run in background
+```
+
+**Configure nignx proxy**
+...updating
