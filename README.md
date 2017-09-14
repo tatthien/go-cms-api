@@ -78,7 +78,7 @@ nohup ./go-cms-api &
 
 **Configure nignx proxy**
 
-Assume you run the application on port `3000`.
+Assume that you run the application on port `3000`.
 
 Follow these steps below:
 
