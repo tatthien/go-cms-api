@@ -19,9 +19,14 @@ Copy or rename the file `.env.example` to `.env`. Then enter your own server ip,
 ```
 APP_IP=your_server_ip
 APP_PORT=your_application_port
+
 DATABASE_NAME=your_database_name
 DATABASE_USERNAME=your_datatase_username
 DATABASE_PASSWORD=your_database_password
+
+ADMIN_USERNAME=your_admin_username
+ADMIN_PASSWORD=your_admin_password
+ADMIN_EMAIL=your_admin_email
 ```
 
 If you folk this project, make sure you do not push this `.env` file to Github. I think you know why ;)
@@ -46,7 +51,7 @@ go run go-cms-api.go
 
 ```
 go build go-cms-api.go
-nohup ./go-cms-api & // run in background
+nohup ./go-cms-api &
 ```
 
 **Configure nignx proxy**
