@@ -2,6 +2,16 @@
 
 This is a small api service provides getting, creating posts via REST. It also includes the JWT authentication to prevent anonymous put the data into database.
 
+## Table of contents
+
+[How to use](https://github.com/tatthien/go-cms-api#how-to-use)
+- [Get the project](https://github.com/tatthien/go-cms-api#get-the-project)
+- [Configure app information](https://github.com/tatthien/go-cms-api#configure-app-information)
+- [Configure token](https://github.com/tatthien/go-cms-api#configure-token)
+- [Install database](https://github.com/tatthien/go-cms-api#install-database)
+- [Run in local](https://github.com/tatthien/go-cms-api#run-in-local)
+- [Run in server with custom domain](https://github.com/tatthien/go-cms-api#run-in-server-with-custom-domain)
+
 ## How to use
 
 ### Get the project 
