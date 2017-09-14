@@ -64,6 +64,21 @@ func (dbfactory *Database) UpdatePost(id int64, post model.Post) (model.Post, er
 	return post, err
 }
 
+// DeletePost delete post by ID
+func (dbfactory *Database) DeletePost(id int64) error {
+	stmt, err := dbfactory.db.Prepare("DELETE FROM `posts` WHERE id = ?")
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // GetPostByID get post data by id
 func (dbfactory *Database) GetPostByID(id int64) (model.Post, error) {
 	stmt, err := dbfactory.db.Prepare("SELECT * FROM `posts` WHERE id = ?")

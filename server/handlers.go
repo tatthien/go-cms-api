@@ -191,7 +191,7 @@ func (s *Server) StorePostHandler(w http.ResponseWriter, r *http.Request) {
 	sendJSON(w, http.StatusOK, resp)
 }
 
-// UpdatePostHandler handler function for update post endpoint
+// UpdatePostHandler handler function to update post endpoint
 func (s *Server) UpdatePostHandler(w http.ResponseWriter, r *http.Request) {
 	var resp Response
 	vars := mux.Vars(r)
@@ -213,5 +213,27 @@ func (s *Server) UpdatePostHandler(w http.ResponseWriter, r *http.Request) {
 	resp.Success = true
 	resp.Data = post
 
+	sendJSON(w, http.StatusOK, resp)
+}
+
+// DeletePostHandler handler function to delete post
+func (s *Server) DeletePostHandler(w http.ResponseWriter, r *http.Request) {
+	var resp Response
+	vars := mux.Vars(r)
+	id, err := strconv.ParseInt(vars["id"], 10, 64)
+	if err != nil {
+		resp.Message = "Post ID is not valid"
+		sendJSON(w, http.StatusOK, resp)
+		return
+	}
+
+	err = s.db.DeletePost(id)
+	if err != nil {
+		resp.Message = "Can not delete post"
+		sendJSON(w, http.StatusOK, resp)
+		return
+	}
+
+	resp.Success = true
 	sendJSON(w, http.StatusOK, resp)
 }

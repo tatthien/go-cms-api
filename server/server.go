@@ -80,9 +80,10 @@ func (s *Server) Run() {
 		Route{"/api/v1", "GET", s.IndexHandler, false},
 		Route{"/api/v1/login", "POST", s.LoginHandler, false},
 		Route{"/api/v1/posts", "GET", s.GetPostsHandler, false},
-		Route{"/api/v1/posts/{slug}", "GET", s.GetPostHandler, false},
 		Route{"/api/v1/posts", "POST", s.StorePostHandler, true},
+		Route{"/api/v1/posts/{slug}", "GET", s.GetPostHandler, false},
 		Route{"/api/v1/posts/{id}", "PATCH", s.UpdatePostHandler, true},
+		Route{"/api/v1/posts/{id}", "DELETE", s.DeletePostHandler, true},
 	}
 	for _, route := range routes {
 		if route.Authenticate {
