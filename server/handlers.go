@@ -55,6 +55,12 @@ func (s *Server) IndexHandler(w http.ResponseWriter, r *http.Request) {
 	sendJSON(w, http.StatusOK, resp)
 }
 
+// CheckLoginHandler check if user logged in
+func (s *Server) CheckLoginHandler(w http.ResponseWriter, r *http.Request) {
+	resp := Response{true, "", nil}
+	sendJSON(w, http.StatusOK, resp)
+}
+
 // LoginHandler handler function for `/api/v1/login` endpoint
 func (s *Server) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var loginUser model.UserCredentials

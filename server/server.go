@@ -78,6 +78,7 @@ func (s *Server) Run() {
 	// Create routes
 	routes := Routes{
 		Route{"/api/v1", "GET", s.IndexHandler, false},
+		Route{"/api/v1/check-login", "GET", s.CheckLoginHandler, true},
 		Route{"/api/v1/login", "POST", s.LoginHandler, false},
 		Route{"/api/v1/posts", "GET", s.GetPostsHandler, false},
 		Route{"/api/v1/posts", "POST", s.StorePostHandler, true},
