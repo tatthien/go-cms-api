@@ -59,6 +59,8 @@ go run go-cms-api.go
 
 ### Run in server with custom domain
 
+**Build and run in background**
+
 ```
 go build go-cms-api.go
 nohup ./go-cms-api &
