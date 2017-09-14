@@ -104,4 +104,4 @@ Restart nginx
 systemctl restart nginx
 ```
 
-After the configuration, you can access your api at `yourdomain.com/ap/api/v1`
+After the configuration, you can access your api at `yourdomain.com/app/api/v1`
