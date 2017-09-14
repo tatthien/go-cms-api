@@ -35,6 +35,16 @@ If you folk this project, make sure you do not push this `.env` file to Github. 
 
 This project is using `jwt-golang` package to generate and validate the token.
 
+To use the token you need to create folder `keys` then put your key files into that folder.
+
+**Create folder and generate key files**
+
+```
+mkdir keys
+openssl genrsa -out app.rsa 1024
+openssl rsa -in app.rsa -pubout -out app.rsa.pub
+```
+
 ### Install database
 
 ```
@@ -55,4 +65,5 @@ nohup ./go-cms-api &
 ```
 
 **Configure nignx proxy**
+
 ...updating
