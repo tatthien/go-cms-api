@@ -30,35 +30,14 @@ If you folk this project, make sure you do not push this `.env` file to Github. 
 
 This project is using `jwt-golang` package to generate and validate the token.
 
-## Install database
+### Install database
 
 ```
 go run install.go
 ```
 
-## Start server
+### Start server
 
 ```
 go run main.go
 ```
-
-## Endpoints
-
-### Authentication
-
-Endpoint: `POST /api/v1/login`
-
-Request data:
-
-- `email`: Admin email
-- `password`: Admin password
-
-### Get list of posts
-
-Endpoint: `GET /api/v1/posts`
-
-Request data:
-
-- `page`: default is `1`. Current page.
-- `limit`: default is `10`. Litmit the posts from response.
-- `post_type`: (`post`|`til`) default is `post`. Get the specific post type.
