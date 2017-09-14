@@ -78,4 +78,30 @@ nohup ./go-cms-api &
 
 **Configure nignx proxy**
 
-...updating
+Assume you run the application on port `3000`.
+
+Follow these steps below:
+
+Open config file in `vim`
+```
+vi yourdomain.com.conf
+```
+
+Add this code at the bottom of the file.
+
+```
+ location /app/ {
+  proxy_set_header X-Real-IP $remote_addr;
+  proxy_set_header X-Forwarded-For $remote_addr;
+  proxy_set_header Host $host;
+  proxy_pass http://127.0.0.1:3000/;
+}
+``` 
+
+Restart nginx
+
+```
+systemctl restart nginx
+```
+
+After the configuration, you can access your api at `yourdomain.com/ap/api/v1`
