@@ -8,6 +8,7 @@ import (
 
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	"github.com/tatthien/go-cms-api/database"
 )
 
@@ -98,7 +99,17 @@ func (s *Server) Run() {
 	}
 
 	fmt.Printf("Sever is started at %s:%s\n", s.ip, s.port)
-	log.Fatal(http.ListenAndServe(s.ip+":"+s.port, r))
+
+	// Implement CORS
+	c := cors.New(cors.Options{
+		AllowedMethods:   []string{"POST", "GET", "PUT", "PATCH", "DELETE"},
+		AllowedHeaders:   []string{"Authorization", "Accept", "Accept-Language", "Content-Language", "Content-Type"},
+		AllowCredentials: true,
+	})
+
+	handler := c.Handler(r)
+
+	log.Fatal(http.ListenAndServe(s.ip+":"+s.port, handler))
 }
 
 // Close the server
