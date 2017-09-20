@@ -34,6 +34,7 @@ func main() {
 		"`post_type` VARCHAR(20)," +
 		"`slug` VARCHAR(255)," +
 		"`author_id` INT (11) UNSIGNED NOT NULL," +
+		"`is_publish` TINYINT(1)," +
 		"`created_at` DATETIME," +
 		"`updated_at` DATETIME," +
 		"PRIMARY KEY (`id`)," +

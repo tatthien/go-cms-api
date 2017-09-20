@@ -10,7 +10,7 @@ import (
 
 // InsertPost insert new post into database
 func (dbfactory *Database) InsertPost(post model.Post) (model.Post, error) {
-	stmt, err := dbfactory.db.Prepare("INSERT INTO `posts` (title, content, post_type, slug, author_id, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?, ?)")
+	stmt, err := dbfactory.db.Prepare("INSERT INTO `posts` (title, content, post_type, slug, is_publish, author_id, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return model.Post{}, err
 	}
@@ -32,7 +32,7 @@ func (dbfactory *Database) InsertPost(post model.Post) (model.Post, error) {
 	post.Slug = slugify.Slugify(post.Title)
 	post.Slug = dbfactory.GetUniquePostSlug(post.Slug)
 
-	res, err := stmt.Exec(post.Title, post.Content, post.PostType, post.Slug, post.Author, post.Created, post.Updated)
+	res, err := stmt.Exec(post.Title, post.Content, post.PostType, post.Slug, post.IsPublish, post.Author, post.Created, post.Updated)
 	if err != nil {
 		return model.Post{}, err
 	}
@@ -48,14 +48,14 @@ func (dbfactory *Database) InsertPost(post model.Post) (model.Post, error) {
 
 // UpdatePost update post
 func (dbfactory *Database) UpdatePost(id int64, post model.Post) (model.Post, error) {
-	stmt, err := dbfactory.db.Prepare("UPDATE `posts` SET title=?, content=?, updated_at=? WHERE id = ?")
+	stmt, err := dbfactory.db.Prepare("UPDATE `posts` SET title=?, content=?, is_publish=?, updated_at=? WHERE id = ?")
 	if err != nil {
 		return model.Post{}, err
 	}
 
 	post.Updated = ultil.GetCurrentMySQLDate()
 
-	_, err = stmt.Exec(post.Title, post.Content, post.Updated, id)
+	_, err = stmt.Exec(post.Title, post.Content, post.IsPublish, post.Updated, id)
 	if err != nil {
 		return model.Post{}, err
 	}
@@ -88,7 +88,7 @@ func (dbfactory *Database) GetPostByID(id int64) (model.Post, error) {
 
 	var post model.Post
 	rows := stmt.QueryRow(id)
-	if err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.PostType, &post.Slug, &post.Author, &post.Created, &post.Updated); err != nil {
+	if err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.PostType, &post.Slug, &post.IsPublish, &post.Author, &post.Created, &post.Updated); err != nil {
 		return model.Post{}, err
 	}
 
@@ -104,7 +104,7 @@ func (dbfactory *Database) GetPostBySlug(slug string) (model.Post, error) {
 
 	var post model.Post
 	rows := stmt.QueryRow(slug)
-	if err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.PostType, &post.Slug, &post.Author, &post.Created, &post.Updated); err != nil {
+	if err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.PostType, &post.Slug, &post.IsPublish, &post.Author, &post.Created, &post.Updated); err != nil {
 		return model.Post{}, err
 	}
 
@@ -150,7 +150,7 @@ func (dbfactory *Database) GetPosts(args map[string]string) (model.Posts, error)
 	var posts model.Posts
 	for rows.Next() {
 		var post model.Post
-		if err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.PostType, &post.Slug, &post.Author, &post.Created, &post.Updated); err != nil {
+		if err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.PostType, &post.Slug, &post.IsPublish, &post.Author, &post.Created, &post.Updated); err != nil {
 			continue
 		}
 		posts = append(posts, post)
